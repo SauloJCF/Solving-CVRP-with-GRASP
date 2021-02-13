@@ -9,7 +9,7 @@ namespace cvrp_project.Entities
         public double Y { get; set; }
         public double Demand { get; set; }
 
-        private double GetDistance(Point p2)
+        public double CalculateDistance(Point p2)
         {
             return Math.Sqrt(Math.Pow(p2.X - X, 2) + Math.Pow(p2.Y - Y, 2));
         }

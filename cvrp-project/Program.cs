@@ -8,12 +8,12 @@ namespace cvrp_project
 {
     class Program
     {
-        private static Cvrp GetInstance(string filePath)
+        private static CvrpInstance GetInstance(string filePath)
         {
             string line = "";
             string[] splitted;
             StreamReader file = new StreamReader(filePath);
-            Cvrp cvrp = new Cvrp();
+            CvrpInstance cvrp = new CvrpInstance();
 
             // Leitura do cabeçalho
             for (int i = 0; i < 4; i++)// Pula três linhas até chegar na quarta, onde está a dimensão
@@ -26,7 +26,7 @@ namespace cvrp_project
                 line = file.ReadLine();
 
             splitted = line.Split(" ");
-            cvrp.Capacity = double.Parse(splitted[splitted.Length - 1]);
+            cvrp.MaxCapacity = double.Parse(splitted[splitted.Length - 1]);
 
             file.ReadLine();// Pula o título    
 
@@ -68,8 +68,11 @@ namespace cvrp_project
         static void Main(string[] args)
         {
             //string test = @"instances\Vrp-Set-A\A\A-n32-k5.vrp";
-            Cvrp cvrp = GetInstance("myInstance.vrp");
-            Console.WriteLine(cvrp.ToString());
+            CvrpInstance instance = GetInstance("myInstance.vrp");
+            instance.CalculateDistances();
+            new Grasp().BuildGrasp(instance);
+
+            // Console.WriteLine(instance.ToString());
             Console.ReadKey();
         }
     }
