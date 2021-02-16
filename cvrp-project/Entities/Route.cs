@@ -8,8 +8,13 @@ namespace cvrp_project.Entities
     {
         public List<Point> Points { get; set; } = new List<Point>();
         public double Cost { get; private set; }
-        private readonly double MaxCapacity;
+        public double MaxCapacity { get; private set; }
         public double CurrDistance { get; set; }
+
+        public Route()
+        {
+
+        }
 
         public Route(Point depot, double maxCapacity)
         {
@@ -31,6 +36,27 @@ namespace cvrp_project.Entities
             Points.Add(newPoint);
             Cost += LastPoint().Demand;
             CurrDistance += distance;
+        }
+
+        public Route Copy()
+        {
+            Route copyRoute = new Route();
+            copyRoute.Cost = Cost;
+            copyRoute.CurrDistance = CurrDistance;
+            copyRoute.MaxCapacity = MaxCapacity;
+            copyRoute.Points.AddRange(Points);
+            return copyRoute;
+        }
+
+        public void Recalculate(CvrpInstance instance)
+        {
+            CurrDistance = 0;
+            Cost = Points[0].Demand;
+            for (int i = 0; i < Points.Count - 1; i++)
+            {
+                Cost += Points[i + 1].Demand;
+                CurrDistance += instance.GetDistance(i, i + 1);
+            }
         }
 
         public override string ToString()

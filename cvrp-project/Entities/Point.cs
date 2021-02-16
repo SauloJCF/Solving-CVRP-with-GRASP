@@ -18,5 +18,16 @@ namespace cvrp_project.Entities
         {
             return $"Id: {Id}; X: {X}; Y: {Y}; Demand: {Demand};";
         }
+
+        public Point Copy()
+        {
+            return new Point
+            {
+                Id = this.Id,
+                X = this.X,
+                Y = this.Y,
+                Demand = this.Demand,
+            };
+        }
     }
 }

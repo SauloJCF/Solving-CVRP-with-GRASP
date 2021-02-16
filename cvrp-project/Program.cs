@@ -67,10 +67,12 @@ namespace cvrp_project
 
         static void Main(string[] args)
         {
-            //string test = @"instances\Vrp-Set-A\A\A-n32-k5.vrp";
-            CvrpInstance instance = GetInstance("myInstance.vrp");
+
+            string test = @"instances\Vrp-Set-A\A\A-n32-k5.vrp";
+            //test = "myInstance.vrp";
+            CvrpInstance instance = GetInstance(test);
             instance.CalculateDistances();
-            new Grasp().BuildGrasp(instance);
+            new Grasp(instance).ExecuteGrasp(10);
 
             // Console.WriteLine(instance.ToString());
             Console.ReadKey();
