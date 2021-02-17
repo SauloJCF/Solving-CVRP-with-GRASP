@@ -60,19 +60,14 @@ namespace cvrp_project
             return cvrp;
         }
 
-        private static double GetDistance(double x1, double y1, double x2, double y2)
-        {
-            return Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
-        }
-
         static void Main(string[] args)
         {
 
             string test = @"instances\Vrp-Set-A\A\A-n32-k5.vrp";
-            //test = "myInstance.vrp";
+            // test = "myInstance.vrp";
             CvrpInstance instance = GetInstance(test);
             instance.CalculateDistances();
-            new Grasp(instance).ExecuteGrasp(10);
+            new Grasp(instance).ExecuteGrasp(1000);
 
             // Console.WriteLine(instance.ToString());
             Console.ReadKey();

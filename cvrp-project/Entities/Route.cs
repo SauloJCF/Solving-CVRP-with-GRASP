@@ -55,7 +55,7 @@ namespace cvrp_project.Entities
             for (int i = 0; i < Points.Count - 1; i++)
             {
                 Cost += Points[i + 1].Demand;
-                CurrDistance += instance.GetDistance(i, i + 1);
+                CurrDistance += instance.GetDistance(Points[i].Pos, Points[i + 1].Pos);
             }
         }
 

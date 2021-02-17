@@ -8,6 +8,13 @@ namespace cvrp_project.Entities
         public double X { get; set; }
         public double Y { get; set; }
         public double Demand { get; set; }
+        public int Pos
+        {
+            get
+            {
+                return Id - 1;
+            }
+        }
 
         public double CalculateDistance(Point p2)
         {
