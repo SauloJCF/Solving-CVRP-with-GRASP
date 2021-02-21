@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace cvrp_project.Entities
@@ -18,8 +19,8 @@ namespace cvrp_project.Entities
         public void AddRoute(Route newRoute)
         {
             Routes.Add(newRoute);
-            TotalDistance += newRoute.CurrDistance;
-            TotalCost += newRoute.Cost;
+            TotalDistance += newRoute.TotalDistance;
+            TotalCost += newRoute.TotalCost;
         }
 
         public Route LastRoute()
@@ -45,8 +46,8 @@ namespace cvrp_project.Entities
             {
                 sb.AppendLine($"Route {Routes.IndexOf(r)}");
                 sb.AppendLine(r.ToString());
-                totalDistance += r.CurrDistance;
-                totalCost += r.Cost;
+                totalDistance += r.TotalDistance;
+                totalCost += r.TotalCost;
             }
             sb.AppendLine($"Total distance: {totalDistance}");
             sb.AppendLine($"Total Cost: {totalCost}");
@@ -59,9 +60,78 @@ namespace cvrp_project.Entities
             TotalCost = 0;
             foreach (var r in Routes)
             {
-                TotalDistance += r.CurrDistance;
-                TotalCost += r.Cost;
+                TotalDistance += r.TotalDistance;
+                TotalCost += r.TotalCost;
             }
+        }
+
+        public void SaveSolution(string filePath)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(Routes.Count.ToString());
+
+            foreach (var route in Routes)
+            {
+                sb.Append($"Route #{Routes.IndexOf(route)}: ");
+                foreach (var point in route.Points)
+                {
+                    sb.Append(point.Id + " ");
+                }
+                sb.AppendLine();
+            }
+            sb.AppendLine($"Cost: {TotalDistance.ToString()}");
+            File.WriteAllText(filePath, sb.ToString());
+        }
+
+        public void GerarHTML(CvrpInstance instance, string fileName)
+        {
+            StringBuilder vertices = new StringBuilder();
+            StringBuilder arestas = new StringBuilder();
+            StringBuilder modelo = new StringBuilder();
+            StringBuilder associations = new StringBuilder();
+            int[] routes = new int[instance.Dimension];
+
+            modelo.Append(File.ReadAllText("modelo.html"));
+
+            int cont = 0;
+
+            foreach (var point in instance.Points)
+            {
+                if (cont != 0)
+                {
+                    vertices.Append(",");
+                }
+                cont++;
+                vertices.Append("{\"l\":" + point.Id + ", \"x\": " + point.X + ", \"y\": " + point.Y + "}");
+            }
+
+            cont = 0;
+            foreach (var route in Routes)
+            {
+                for (int i = 0; i < route.Points.Count - 1; i++)
+                {
+                    if (cont != 0)
+                    {
+                        arestas.Append(",");
+                    }
+                    routes[route.Points[i].Pos] = Routes.IndexOf(route);
+
+                    arestas.Append("{\"o\": " + route.Points[i].Pos + ", \"d\": " + route.Points[i + 1].Pos + "}");
+
+                    cont++;
+                }
+            }
+
+            for (int i = 0; i < routes.Length; i++)
+            {
+                if (i != 0)
+                    associations.Append(",");
+                associations.Append(routes[i]);
+            }
+
+            modelo = modelo.Replace("{v}", vertices.ToString()).Replace("{a}", arestas.ToString()).Replace("{r}", associations.ToString());
+            File.WriteAllText(fileName, modelo.ToString());
+            //Console.WriteLine(modelo.ToString());
         }
     }
 }

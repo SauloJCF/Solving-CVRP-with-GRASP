@@ -28,13 +28,12 @@ namespace cvrp_project.Entities
 
         public Point Copy()
         {
-            return new Point
-            {
-                Id = this.Id,
-                X = this.X,
-                Y = this.Y,
-                Demand = this.Demand,
-            };
+            Point copyPoint = new Point();
+            copyPoint.Id = Id;
+            copyPoint.X = X;
+            copyPoint.Y = Y;
+            copyPoint.Demand = Demand;
+            return copyPoint;
         }
     }
 }

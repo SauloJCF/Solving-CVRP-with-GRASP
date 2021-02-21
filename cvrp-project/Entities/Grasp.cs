@@ -5,38 +5,44 @@ namespace cvrp_project.Entities
 {
     public class Grasp
     {
-        private readonly CvrpInstance Instance;
-        private const double alpha = 0.05;
+        private CvrpInstance Instance;
+        private double Alpha;
 
-        public Grasp(CvrpInstance instance)
+        public Grasp()
         {
-            Instance = instance;
         }
 
-        public void ExecuteGrasp(int maxIterations)
+        public Solution ExecuteGrasp(CvrpInstance instance, int maxIterations, double alpha)
         {
+            Alpha = alpha;
+            Instance = instance;
+            double sum = 0;
             int i = 0;
-            Solution bestSolution = new Solution();
-            bestSolution.TotalDistance = double.MaxValue;
+            Solution bestSolution = new Solution
+            {
+                TotalDistance = double.MaxValue
+            };
 
             while (i < maxIterations)
             {
-                Console.WriteLine($"Iteration: {i}");
                 Solution partialSolution = BuildGrasp();
-                Console.WriteLine("Partial Distance: " + partialSolution.TotalDistance.ToString());
+                // Console.WriteLine("Partial Distance: " + partialSolution.TotalDistance.ToString());
 
                 Solution improvement = LocalSearch(partialSolution);
-                Console.WriteLine("Improved Distance: " + improvement.TotalDistance.ToString());
-                Console.WriteLine();
-
+                // Console.WriteLine("Improved Distance: " + improvement.TotalDistance.ToString());
+                // Console.WriteLine();
+                sum += improvement.TotalDistance;
                 if (improvement.TotalDistance < bestSolution.TotalDistance)
                 {
                     bestSolution = improvement.Copy();
                 }
                 i++;
             }
+            Console.WriteLine($"Média: {sum/maxIterations}");
+
             Console.WriteLine($"Best Solution:");
             Console.WriteLine(bestSolution.ToString());
+            return bestSolution;
         }
 
         public Solution BuildGrasp()
@@ -73,7 +79,7 @@ namespace cvrp_project.Entities
                 }
 
                 // calcula o custo de acordo com os valores encotrados
-                double cost = minDistance + alpha * (maxDistance - minDistance);
+                double cost = minDistance + Alpha * (maxDistance - minDistance);
 
                 // percorre a lista de candidatos e adiciona apenas aqueles que estão abaixo do custo
                 for (int i = 0; i < listOfCandidates.Count; i++)
@@ -82,7 +88,7 @@ namespace cvrp_project.Entities
                     double demand = listOfCandidates[i].Demand;
                     double distance = Instance.GetDistance(posLastPoint, posNewPoint);
 
-                    if (distance <= cost && (route.Cost + demand) <= Instance.MaxCapacity)
+                    if (distance <= cost && (route.TotalCost + demand) <= Instance.MaxCapacity)
                     {
                         restrictedListOfCandidates.Add(listOfCandidates[i]);
                     }
@@ -118,43 +124,41 @@ namespace cvrp_project.Entities
 
         public Solution LocalSearch(Solution partialSolution)
         {
-            int iterations = 0, maxIterations = 15;
-            
+            int maxIterations = 35, iterations = 0;
             Random randomGenerator = new Random(DateTime.Now.Millisecond);
-
             Solution bestSolution = partialSolution.Copy();
 
-            while(iterations < maxIterations)
+            while (iterations < maxIterations)
             {
+                Solution newSolution = partialSolution.Copy();
+                int routePos1 = randomGenerator.Next(0, partialSolution.Routes.Count);
+                int routePos2 = routePos1;
 
-                for (int i = 0; i < partialSolution.Routes.Count - 1; i++)
+                while (routePos2 == routePos1)
                 {
-                    Solution newSolution = partialSolution.Copy();
-
-                    Route r1 = partialSolution.Routes[i].Copy();
-                    Route r2 = partialSolution.Routes[i + 1].Copy();
-
-                    int pos1 = randomGenerator.Next(1, r1.Points.Count - 1);
-                    int pos2 = randomGenerator.Next(1, r2.Points.Count - 1);
-                    Route[] newRoutes = Exchange(pos1, pos2, r1, r2);
-
-                    newSolution.Routes[i] = newRoutes[0].Copy();
-                    newSolution.Routes[i + 1] = newRoutes[1].Copy();
-                    newSolution.Recalculate();
-
-                    if (newSolution.TotalDistance < bestSolution.TotalDistance)
-                    {
-                        Route bestRoute1 = IntraRouteExchange(newRoutes[0]);
-                        Route bestRoute2 = IntraRouteExchange(newRoutes[1]);
-
-                        newSolution.Routes[i] = bestRoute1;
-                        newSolution.Routes[i + 1] = bestRoute2;
-                        newSolution.Recalculate();
-                        bestSolution = newSolution.Copy();
-                        iterations = 0;
-                    }
-                    iterations++;
+                    routePos2 = randomGenerator.Next(0, partialSolution.Routes.Count);
                 }
+                Route r1 = partialSolution.Routes[routePos1].Copy();
+                Route r2 = partialSolution.Routes[routePos2].Copy();
+
+                int pointPos1 = randomGenerator.Next(1, r1.Points.Count - 1);
+                int pointPos2 = randomGenerator.Next(1, r2.Points.Count - 1);
+                Route[] newRoutes = Exchange(pointPos1, pointPos2, r1, r2);
+
+
+                if (r1.TotalDistance + r2.TotalDistance > newRoutes[0].TotalDistance + newRoutes[1].TotalDistance)
+                {
+                    Route bestRoute1 = IntraRouteExchange(newRoutes[0]);
+                    Route bestRoute2 = IntraRouteExchange(newRoutes[1]);
+                    newSolution.Routes[routePos1] = bestRoute1.Copy();
+                    newSolution.Routes[routePos2] = bestRoute2.Copy();
+                    newSolution.Recalculate();
+                    bestSolution = newSolution.Copy();
+                    iterations = 0;
+                    Console.WriteLine("Melhoria");
+                }
+
+                iterations++;
             }
             return bestSolution;
         }
@@ -166,7 +170,7 @@ namespace cvrp_project.Entities
             for (int j = 1; j < route.Points.Count - 2; j++)
             {
                 Route newRoute = Exchange(j, j + 1, route);
-                if (newRoute.CurrDistance < bestRoute.CurrDistance)
+                if (newRoute.TotalDistance < bestRoute.TotalDistance)
                 {
                     bestRoute = newRoute.Copy();
                 }
@@ -196,37 +200,9 @@ namespace cvrp_project.Entities
 
             copyR1.Recalculate(Instance);
             copyR2.Recalculate(Instance);
-            
+
             Route[] routes = new Route[2] { copyR1, copyR2 };
             return routes;
-        }
-
-        private Solution InterRoutesExchange(Solution partialSolution)
-        {
-            Random randomGenerator = new Random(DateTime.Now.Millisecond);
-            Solution bestSolution = partialSolution.Copy();
-
-            for (int i = 0; i < partialSolution.Routes.Count - 1; i++)
-            {
-                Solution newSolution = partialSolution.Copy();
-
-                Route r1 = partialSolution.Routes[i].Copy();
-                Route r2 = partialSolution.Routes[i + 1].Copy();
-
-                int pos1 = randomGenerator.Next(1, r1.Points.Count - 1);
-                int pos2 = randomGenerator.Next(1, r2.Points.Count - 1);
-                Route[] newRoutes = Exchange(pos1, pos2, r1, r2);
-
-                newSolution.Routes[i] = newRoutes[0].Copy();
-                newSolution.Routes[i + 1] = newRoutes[1].Copy();
-                newSolution.Recalculate();
-
-                if (newSolution.TotalDistance < bestSolution.TotalDistance)
-                {
-                    bestSolution = newSolution.Copy();
-                }
-            }
-            return bestSolution;
         }
     }
 }

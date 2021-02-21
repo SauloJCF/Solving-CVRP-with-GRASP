@@ -7,9 +7,9 @@ namespace cvrp_project.Entities
     public class Route
     {
         public List<Point> Points { get; set; } = new List<Point>();
-        public double Cost { get; private set; }
+        public double TotalCost { get; private set; }
         public double MaxCapacity { get; private set; }
-        public double CurrDistance { get; set; }
+        public double TotalDistance { get; set; }
 
         public Route()
         {
@@ -20,8 +20,8 @@ namespace cvrp_project.Entities
         {
             Points.Add(depot);
             MaxCapacity = maxCapacity;
-            Cost = 0;
-            CurrDistance = 0;
+            TotalCost = 0;
+            TotalDistance = 0;
         }
 
         public Point LastPoint()
@@ -31,18 +31,18 @@ namespace cvrp_project.Entities
 
         public void InsertPoint(Point newPoint, double distance)
         {
-            if (Cost + newPoint.Demand > MaxCapacity)
+            if (TotalCost + newPoint.Demand > MaxCapacity)
                 throw new ApplicationException("This point exceeds max capacity");
             Points.Add(newPoint);
-            Cost += LastPoint().Demand;
-            CurrDistance += distance;
+            TotalCost += LastPoint().Demand;
+            TotalDistance += distance;
         }
 
         public Route Copy()
         {
             Route copyRoute = new Route();
-            copyRoute.Cost = Cost;
-            copyRoute.CurrDistance = CurrDistance;
+            copyRoute.TotalCost = TotalCost;
+            copyRoute.TotalDistance = TotalDistance;
             copyRoute.MaxCapacity = MaxCapacity;
             copyRoute.Points.AddRange(Points);
             return copyRoute;
@@ -50,12 +50,12 @@ namespace cvrp_project.Entities
 
         public void Recalculate(CvrpInstance instance)
         {
-            CurrDistance = 0;
-            Cost = Points[0].Demand;
+            TotalDistance = 0;
+            TotalCost = Points[0].Demand;
             for (int i = 0; i < Points.Count - 1; i++)
             {
-                Cost += Points[i + 1].Demand;
-                CurrDistance += instance.GetDistance(Points[i].Pos, Points[i + 1].Pos);
+                TotalCost += Points[i + 1].Demand;
+                TotalDistance += instance.GetDistance(Points[i].Pos, Points[i + 1].Pos);
             }
         }
 
@@ -67,8 +67,8 @@ namespace cvrp_project.Entities
                 sb.Append($"{p.Id} ");
             }
             sb.AppendLine();
-            sb.AppendLine($"Cost: {Cost.ToString()}");
-            sb.AppendLine($"Distance: {CurrDistance.ToString()}");
+            sb.AppendLine($"Cost: {TotalCost.ToString()}");
+            sb.AppendLine($"Distance: {TotalDistance.ToString()}");
             return sb.ToString();
         }
     }
