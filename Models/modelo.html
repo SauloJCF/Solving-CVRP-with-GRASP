@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Exercício de Grafos</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body
+            {
+                padding: 0;
+                margin: 0;
+            }
+            div
+            {
+                width: 1079px;
+                padding: 0 10px;
+                margin: auto;
+            }			
+            canvas{
+                background-image: url(principais-aeroportos1080.jpg);
+                background-repeat: no-repeat;
+            }
+        </style>
+        <script>
+            let vertices = [{v}];
+            // Gerar algo como isto.
+            /*
+            let vertices = [{"l": 0, "x": 0, "y": 0},
+                {"l": 1, "x": 0, "y": 0},
+                {"l": 2, "x": 0, "y": 0},
+                {"l": 3, "x": 0, "y": 0},
+                {"l": 4, "x": 0, "y": 0},
+                {"l": 5, "x": 0, "y": 0},
+                {"l": 6, "x": 0, "y": 0},
+                {"l": 7, "x": 0, "y": 0},
+                {"l": 8, "x": 0, "y": 0},
+                {"l": 9, "x": 0, "y": 0},
+                {"l": 10, "x": 0, "y": 0}
+            ];
+            */
+           
+            let routes = [{r}];
+
+            let arestas = [{a}];
+
+            // Gerar algo como isto.
+            /*
+            let arestas = [{"o": 0, "d": 1}, {"o": 1, "d": 4}, {"o": 2, "d": 5}, {"o": 2, "d": 9}];
+            */
+
+            let colors = [ "#00DDFF", "#E32636", "#FFFF00", "#ADFF2F", "#EEAD2D", "#9966CC", "#B0E0E6", "#F400A1", "#708090"];
+           
+            window.addEventListener('load', function () {
+                let des;
+                /*
+                for (var i = 0; i < vertices.length; i++)
+                {
+                    vertices[i].x = Math.random() * 700;
+                    vertices[i].y = Math.random() * 700;
+                }*/
+                let canvas = document.getElementById("desenho");
+                let ctx = canvas.getContext("2d");
+                
+                ctx.beginPath();
+                ctx.fillStyle = "rgba(255,0,0,0)";    
+                for (var i = 0; i < arestas.length; i++) {
+                    ctx.moveTo(vertices[arestas[i].o].x, vertices[arestas[i].o].y);
+                    ctx.lineTo(vertices[arestas[i].d].x, vertices[arestas[i].d].y);                    
+                }
+                ctx.stroke();
+                
+                let grd = ctx.createRadialGradient(5, 5, 1, 5, 5, 5);
+                grd.addColorStop(0, "red");
+                grd.addColorStop(1, "white");
+
+                ctx.font = '12px serif';
+                for (var i = 0; i < vertices.length; i++) { 
+                    des = ctx.measureText(vertices[i].l).width/2.0;
+                    ctx.beginPath();
+                    ctx.fillStyle = colors[routes[vertices[i].l - 1]];  
+                    ctx.arc(vertices[i].x, vertices[i].y, 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.fillStyle = "#000000"; 
+                    ctx.fillText(vertices[i].l, vertices[i].x-des, vertices[i].y+des);
+                    ctx.fill();
+                }            
+               
+            });
+        </script>
+    </head>
+    <body>
+        <div>
+            <header>
+                <h1>Grafo</h1>
+            </header>
+            <article>
+                <canvas id="desenho" width="1079" height="741"></canvas>
+            </article>
+            <footer>
+                <p>[Meta-Heurísticas - 2021 - Saulo]</p>
+            </footer>
+        </div>
+    </body>
+</html>
