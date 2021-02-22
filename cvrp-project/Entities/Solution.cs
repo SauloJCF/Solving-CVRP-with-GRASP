@@ -20,7 +20,7 @@ namespace cvrp_project.Entities
         {
             Routes.Add(newRoute);
             TotalDistance += newRoute.TotalDistance;
-            TotalCost += newRoute.TotalCost;
+            TotalCost += newRoute.TotalCapacity;
         }
 
         public Route LastRoute()
@@ -47,7 +47,7 @@ namespace cvrp_project.Entities
                 sb.AppendLine($"Route {Routes.IndexOf(r)}");
                 sb.AppendLine(r.ToString());
                 totalDistance += r.TotalDistance;
-                totalCost += r.TotalCost;
+                totalCost += r.TotalCapacity;
             }
             sb.AppendLine($"Total distance: {totalDistance}");
             sb.AppendLine($"Total Cost: {totalCost}");
@@ -61,7 +61,7 @@ namespace cvrp_project.Entities
             foreach (var r in Routes)
             {
                 TotalDistance += r.TotalDistance;
-                TotalCost += r.TotalCost;
+                TotalCost += r.TotalCapacity;
             }
         }
 
@@ -72,14 +72,14 @@ namespace cvrp_project.Entities
 
             foreach (var route in Routes)
             {
-                sb.Append($"Route #{Routes.IndexOf(route)}: ");
+                sb.AppendLine($"Route #{Routes.IndexOf(route)} - Distance: {route.TotalDistance} Capacity: {route.TotalCapacity}");
                 foreach (var point in route.Points)
                 {
                     sb.Append(point.Id + " ");
                 }
                 sb.AppendLine();
             }
-            sb.AppendLine($"Cost: {TotalDistance.ToString()}");
+            sb.AppendLine($"Solution Distance: {TotalDistance.ToString()}");
             File.WriteAllText(filePath, sb.ToString());
         }
 

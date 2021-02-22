@@ -88,7 +88,7 @@ namespace cvrp_project.Entities
                     double demand = listOfCandidates[i].Demand;
                     double distance = Instance.GetDistance(posLastPoint, posNewPoint);
 
-                    if (distance <= cost && (route.TotalCost + demand) <= Instance.MaxCapacity)
+                    if (distance <= cost && (route.TotalCapacity + demand) <= Instance.MaxCapacity)
                     {
                         restrictedListOfCandidates.Add(listOfCandidates[i]);
                     }
@@ -146,7 +146,7 @@ namespace cvrp_project.Entities
                 Route[] newRoutes = Exchange(pointPos1, pointPos2, r1, r2);
 
 
-                if (r1.TotalDistance + r2.TotalDistance > newRoutes[0].TotalDistance + newRoutes[1].TotalDistance)
+                if (r1.TotalDistance + r2.TotalDistance > newRoutes[0].TotalDistance + newRoutes[1].TotalDistance && newRoutes[0].TotalCapacity <= newRoutes[0].MaxCapacity && newRoutes[1].TotalCapacity <= newRoutes[1].MaxCapacity)
                 {
                     Route bestRoute1 = IntraRouteExchange(newRoutes[0]);
                     Route bestRoute2 = IntraRouteExchange(newRoutes[1]);
@@ -155,7 +155,7 @@ namespace cvrp_project.Entities
                     newSolution.Recalculate();
                     bestSolution = newSolution.Copy();
                     iterations = 0;
-                    Console.WriteLine("Melhoria");
+                    //Console.WriteLine("Melhoria");
                 }
 
                 iterations++;
