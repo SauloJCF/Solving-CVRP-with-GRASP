@@ -97,6 +97,7 @@ namespace cvrp_project.Entities
                 // seleciona um candidato aleatório da lista e adiciona à rota
                 if (restrictedListOfCandidates.Count != 0)
                 {
+                    //Console.WriteLine(restrictedListOfCandidates.Count);
                     Random randomGenerator = new Random();
                     int pos = randomGenerator.Next(0, restrictedListOfCandidates.Count);
                     route.InsertPoint(restrictedListOfCandidates[pos], Instance.GetDistance(lastPoint.Pos, restrictedListOfCandidates[pos].Pos));
