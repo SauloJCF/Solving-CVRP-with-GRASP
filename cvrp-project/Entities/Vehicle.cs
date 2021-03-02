@@ -4,70 +4,70 @@ using System.Text;
 
 namespace cvrp_project.Entities
 {
-    public class Route
+    public class Vehicle
     {
-        public List<Point> Points { get; set; } = new List<Point>();
-        public double TotalCapacity { get; private set; }
+        public List<Point> Route { get; set; } = new List<Point>();
+        public double TotalLoad { get; private set; }
         public double MaxCapacity { get; private set; }
         public double TotalDistance { get; set; }
 
-        public Route()
+        public Vehicle()
         {
 
         }
 
-        public Route(Point depot, double maxCapacity)
+        public Vehicle(Point depot, double maxCapacity)
         {
-            Points.Add(depot);
+            Route.Add(depot);
             MaxCapacity = maxCapacity;
-            TotalCapacity = 0;
+            TotalLoad = 0;
             TotalDistance = 0;
         }
 
         public Point LastPoint()
         {
-            return Points[^1];
+            return Route[^1];
         }
 
         public void InsertPoint(Point newPoint, double distance)
         {
-            if (TotalCapacity + newPoint.Demand > MaxCapacity)
+            if (TotalLoad + newPoint.Demand > MaxCapacity)
                 throw new ApplicationException("This point exceeds max capacity");
-            Points.Add(newPoint);
-            TotalCapacity += LastPoint().Demand;
+            Route.Add(newPoint);
+            TotalLoad += LastPoint().Demand;
             TotalDistance += distance;
         }
 
-        public Route Copy()
+        public Vehicle Copy()
         {
-            Route copyRoute = new Route();
-            copyRoute.TotalCapacity = TotalCapacity;
+            Vehicle copyRoute = new Vehicle();
+            copyRoute.TotalLoad = TotalLoad;
             copyRoute.TotalDistance = TotalDistance;
             copyRoute.MaxCapacity = MaxCapacity;
-            copyRoute.Points.AddRange(Points);
+            copyRoute.Route.AddRange(Route);
             return copyRoute;
         }
 
         public void Recalculate(CvrpInstance instance)
         {
             TotalDistance = 0;
-            TotalCapacity = Points[0].Demand;
-            for (int i = 0; i < Points.Count - 1; i++)
+            TotalLoad = Route[0].Demand;
+            for (int i = 0; i < Route.Count - 1; i++)
             {
-                TotalCapacity += Points[i + 1].Demand;
-                TotalDistance += instance.GetDistance(Points[i].Pos, Points[i + 1].Pos);
+                TotalLoad += Route[i + 1].Demand;
+                TotalDistance += instance.GetDistance(Route[i].Pos, Route[i + 1].Pos);
             }
         }
 
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            foreach (var p in Points)
+            foreach (var p in Route)
             {
                 sb.Append($"{p.Id} ");
             }
             sb.AppendLine();
-            sb.AppendLine($"Cost: {TotalCapacity.ToString()}");
+            sb.AppendLine($"Cost: {TotalLoad.ToString()}");
             sb.AppendLine($"Distance: {TotalDistance.ToString()}");
             return sb.ToString();
         }
