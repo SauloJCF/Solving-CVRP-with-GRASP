@@ -56,7 +56,7 @@ namespace cvrp_project.Entities
             listOfCandidates.Remove(depot);
 
             // Inicia uma rota, com o ponto inicial sendo o depósito
-            Route route = new Route(depot, Instance.MaxCapacity);
+            Vehicle route = new Vehicle(depot, Instance.MaxCapacity);
 
             while (listOfCandidates.Count > 0)
             {
@@ -88,7 +88,7 @@ namespace cvrp_project.Entities
                     double demand = listOfCandidates[i].Demand;
                     double distance = Instance.GetDistance(posLastPoint, posNewPoint);
 
-                    if (distance <= cost && (route.TotalCapacity + demand) <= Instance.MaxCapacity)
+                    if (distance <= cost && (route.TotalLoad + demand) <= Instance.MaxCapacity)
                     {
                         restrictedListOfCandidates.Add(listOfCandidates[i]);
                     }
@@ -108,7 +108,7 @@ namespace cvrp_project.Entities
                 {
                     route.InsertPoint(depot, Instance.GetDistance(lastPoint.Pos, depot.Pos));
                     partialSolution.AddRoute(route);
-                    route = new Route(depot, Instance.MaxCapacity);
+                    route = new Vehicle(depot, Instance.MaxCapacity);
                 }
 
             }
@@ -131,28 +131,28 @@ namespace cvrp_project.Entities
 
             while (iterations < maxIterations)
             {
-                Solution newSolution = partialSolution.Copy();
-                int routePos1 = randomGenerator.Next(0, partialSolution.Routes.Count);
+                Solution newSolution = bestSolution.Copy();
+                int routePos1 = randomGenerator.Next(0, partialSolution.Vehicles.Count);
                 int routePos2 = routePos1;
 
                 while (routePos2 == routePos1)
                 {
-                    routePos2 = randomGenerator.Next(0, partialSolution.Routes.Count);
+                    routePos2 = randomGenerator.Next(0, partialSolution.Vehicles.Count);
                 }
-                Route r1 = partialSolution.Routes[routePos1].Copy();
-                Route r2 = partialSolution.Routes[routePos2].Copy();
+                Vehicle r1 = partialSolution.Vehicles[routePos1].Copy();
+                Vehicle r2 = partialSolution.Vehicles[routePos2].Copy();
 
-                int pointPos1 = randomGenerator.Next(1, r1.Points.Count - 1);
-                int pointPos2 = randomGenerator.Next(1, r2.Points.Count - 1);
-                Route[] newRoutes = Exchange(pointPos1, pointPos2, r1, r2);
+                int pointPos1 = randomGenerator.Next(1, r1.Route.Count - 1);
+                int pointPos2 = randomGenerator.Next(1, r2.Route.Count - 1);
+                Vehicle[] newRoutes = Exchange(pointPos1, pointPos2, r1, r2);
 
 
-                if (r1.TotalDistance + r2.TotalDistance > newRoutes[0].TotalDistance + newRoutes[1].TotalDistance && newRoutes[0].TotalCapacity <= newRoutes[0].MaxCapacity && newRoutes[1].TotalCapacity <= newRoutes[1].MaxCapacity)
+                if (r1.TotalDistance + r2.TotalDistance > newRoutes[0].TotalDistance + newRoutes[1].TotalDistance && newRoutes[0].TotalLoad <= newRoutes[0].MaxCapacity && newRoutes[1].TotalLoad <= newRoutes[1].MaxCapacity)
                 {
-                    Route bestRoute1 = IntraRouteExchange(newRoutes[0]);
-                    Route bestRoute2 = IntraRouteExchange(newRoutes[1]);
-                    newSolution.Routes[routePos1] = bestRoute1.Copy();
-                    newSolution.Routes[routePos2] = bestRoute2.Copy();
+                    Vehicle bestRoute1 = IntraRouteExchange(newRoutes[0]);
+                    Vehicle bestRoute2 = IntraRouteExchange(newRoutes[1]);
+                    newSolution.Vehicles[routePos1] = bestRoute1.Copy();
+                    newSolution.Vehicles[routePos2] = bestRoute2.Copy();
                     newSolution.Recalculate();
                     bestSolution = newSolution.Copy();
                     iterations = 0;
@@ -161,16 +161,21 @@ namespace cvrp_project.Entities
 
                 iterations++;
             }
+            for (int i = 0; i < bestSolution.Vehicles.Count; i++)
+            {
+                bestSolution.Vehicles[i] = IntraRouteExchange(bestSolution.Vehicles[i].Copy());
+            }
+            bestSolution.Recalculate();
             return bestSolution;
         }
 
-        private Route IntraRouteExchange(Route route)
+        private Vehicle IntraRouteExchange(Vehicle route)
         {
-            Route bestRoute = route.Copy();
+            Vehicle bestRoute = route.Copy();
 
-            for (int j = 1; j < route.Points.Count - 2; j++)
+            for (int j = 1; j < route.Route.Count - 2; j++)
             {
-                Route newRoute = Exchange(j, j + 1, route);
+                Vehicle newRoute = Exchange(j, j + 1, route);
                 if (newRoute.TotalDistance < bestRoute.TotalDistance)
                 {
                     bestRoute = newRoute.Copy();
@@ -179,30 +184,30 @@ namespace cvrp_project.Entities
             return bestRoute.Copy();
         }
 
-        private Route Exchange(int i, int j, Route r)
+        private Vehicle Exchange(int i, int j, Vehicle r)
         {
-            Route copyRoute = r.Copy();
-            Point p1 = r.Points[i].Copy();
-            Point p2 = r.Points[j].Copy();
-            copyRoute.Points[i] = p2;
-            copyRoute.Points[j] = p1;
+            Vehicle copyRoute = r.Copy();
+            Point p1 = r.Route[i].Copy();
+            Point p2 = r.Route[j].Copy();
+            copyRoute.Route[i] = p2;
+            copyRoute.Route[j] = p1;
             copyRoute.Recalculate(Instance);
             return copyRoute;
         }
 
-        private Route[] Exchange(int i, int j, Route r1, Route r2)
+        private Vehicle[] Exchange(int i, int j, Vehicle r1, Vehicle r2)
         {
-            Route copyR1 = r1.Copy();
-            Route copyR2 = r2.Copy();
+            Vehicle copyR1 = r1.Copy();
+            Vehicle copyR2 = r2.Copy();
 
-            Point aux = copyR1.Points[i].Copy();
-            copyR1.Points[i] = copyR2.Points[j].Copy();
-            copyR2.Points[j] = aux;
+            Point aux = copyR1.Route[i].Copy();
+            copyR1.Route[i] = copyR2.Route[j].Copy();
+            copyR2.Route[j] = aux;
 
             copyR1.Recalculate(Instance);
             copyR2.Recalculate(Instance);
 
-            Route[] routes = new Route[2] { copyR1, copyR2 };
+            Vehicle[] routes = new Vehicle[2] { copyR1, copyR2 };
             return routes;
         }
     }
